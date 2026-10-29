@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 아직 실제 API가 예외를 던지지 않으므로, 테스트 전용 컨트롤러로 각 오류 상황을 만들어 응답 모양을 검사한다.
  */
-@WebMvcTest
+@WebMvcTest(HealthController.class) // 405 테스트에 /health가 필요하다. 다른 컨트롤러(서비스 의존)는 띄우지 않는다.
 @Import(GlobalExceptionHandlerTest.ThrowingController.class)
 class GlobalExceptionHandlerTest {
 

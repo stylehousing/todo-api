@@ -24,7 +24,7 @@ public class User {
 	@Column(nullable = false, unique = true, length = 100)
 	private String email;
 
-	// 지금은 평문 컬럼만 만들어 둔다. 회원가입 단계에서 암호화한 값을 넣을 예정.
+	// 원문이 아니라 BCrypt 해시(60자, "$2a$10$..." 형태)를 저장한다. 암호화는 UserService에서 한다.
 	@Column(nullable = false)
 	private String password;
 

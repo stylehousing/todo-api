@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -28,6 +30,16 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ApiErrorResponse> handleNotReadable(HttpMessageNotReadableException e) {
 		return toResponse(HttpStatus.BAD_REQUEST, "요청 본문(JSON) 형식이 올바르지 않습니다.");
+	}
+
+	// @Valid 검증에 실패한 경우: 어긴 규칙 중 첫 번째 메시지를 돌려준다.
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ApiErrorResponse> handleNotValid(MethodArgumentNotValidException e) {
+		String message = e.getBindingResult().getFieldErrors().stream()
+				.findFirst()
+				.map(FieldError::getDefaultMessage)
+				.orElse("입력값이 올바르지 않습니다.");
+		return toResponse(HttpStatus.BAD_REQUEST, message);
 	}
 
 	// 그 밖의 모든 예외.
