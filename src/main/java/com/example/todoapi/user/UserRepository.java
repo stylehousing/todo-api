@@ -1,5 +1,7 @@
 package com.example.todoapi.user;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -11,5 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	// 메서드 이름을 보고 "SELECT ... WHERE email = ?" 쿼리를 자동으로 만든다.
 	boolean existsByEmail(String email);
+
+	// 없으면 null 대신 빈 Optional을 돌려준다.
+	Optional<User> findByEmail(String email);
 
 }

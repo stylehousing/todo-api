@@ -1,6 +1,7 @@
 package com.example.todoapi.user;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,12 @@ public class User {
 		this.email = email;
 		this.password = password;
 		this.createdAt = LocalDateTime.now();
+	}
+
+	// "A@Test.com"과 "a@test.com"을 같은 계정으로 보도록 앞뒤 공백을 없애고 소문자로 맞춘다.
+	// 가입과 로그인이 반드시 같은 규칙을 써야 하므로 한곳에 둔다.
+	public static String normalizeEmail(String email) {
+		return email.trim().toLowerCase(Locale.ROOT);
 	}
 
 	public Long getId() {

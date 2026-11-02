@@ -1,7 +1,6 @@
 package com.example.todoapi.user;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,15 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.todoapi.common.ApiException;
+import com.example.todoapi.common.PasswordConfig;
 
 /**
  * 회원 관련 비즈니스 로직. JSP 시절 Servlet 안에 섞여 있던 "중복 확인 → 암호화 → INSERT" 흐름을 여기로 모은다.
  */
 @Service
 public class UserService {
-
-	// BCrypt는 비밀번호 앞 72바이트까지만 쓰고, 그보다 길면 예외를 던진다. (한글은 글자당 3바이트)
-	private static final int BCRYPT_MAX_BYTES = 72;
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -30,10 +27,10 @@ public class UserService {
 
 	@Transactional
 	public SignupResponse signup(SignupRequest request) {
-		// "A@Test.com"과 "a@test.com"이 다른 계정으로 가입되지 않게 소문자로 맞춘다.
-		String email = request.email().trim().toLowerCase(Locale.ROOT);
+		String email = User.normalizeEmail(request.email());
 
-		if (request.password().getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_BYTES) {
+		// BCrypt는 72바이트까지만 쓰고, 그보다 길면 암호화할 때 예외를 던진다.
+		if (request.password().getBytes(StandardCharsets.UTF_8).length > PasswordConfig.BCRYPT_MAX_BYTES) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호가 너무 깁니다.");
 		}
 		if (userRepository.existsByEmail(email)) {

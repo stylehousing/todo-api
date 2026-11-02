@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<jjwt.version>0.13.0</jjwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -51,6 +52,24 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+		<!-- 로그인 토큰(JWT)을 만들고 서명한다. 코드에서는 api만 쓰고, 실제 구현(impl)과 JSON 변환(jackson)은 실행할 때만 필요하다. -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
