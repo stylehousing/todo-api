@@ -8,8 +8,12 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import com.example.todoapi.common.ApiException;
+
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -23,6 +27,9 @@ public class JwtTokenProvider {
 
 	// 토큰 유효 시간. 지나면 다시 로그인해야 한다.
 	public static final Duration EXPIRATION = Duration.ofHours(1);
+
+	// 토큰이 없을 때, 위조됐을 때, 만료됐을 때 모두 이 메시지 하나로 응답한다.
+	public static final String UNAUTHORIZED_MESSAGE = "로그인이 필요합니다.";
 
 	private final SecretKey key;
 
@@ -42,6 +49,32 @@ public class JwtTokenProvider {
 				.expiration(Date.from(now.plus(EXPIRATION)))
 				.signWith(key, Jwts.SIG.HS256)
 				.compact();
+	}
+
+	/**
+	 * 토큰의 서명과 만료 시각을 확인하고, 담겨 있는 사용자 id를 돌려준다.
+	 * 위조(서명 불일치), 만료, 형식 오류 등 어떤 이유로 실패하든 같은 401 예외를 던진다.
+	 * 실패 이유를 구분해 알려 주면 공격자에게 힌트가 되기 때문이다.
+	 */
+	public Long getUserId(String token) {
+		try {
+			String subject = Jwts.parser()
+					.verifyWith(key)
+					.build()
+					.parseSignedClaims(token)
+					.getPayload()
+					.getSubject();
+			return Long.valueOf(subject);
+		} catch (JwtException | IllegalArgumentException e) {
+			// ExpiredJwtException(만료), SignatureException(위조), MalformedJwtException(형식 오류)은 모두 JwtException의 자식이다.
+			// IllegalArgumentException: 토큰이 빈 문자열이거나 sub가 숫자가 아닌 경우(NumberFormatException 포함).
+			throw unauthorized();
+		}
+	}
+
+	// 인증 실패 응답은 이 한 곳에서만 만든다. 인터셉터도 이 메서드를 써서 메시지를 통일한다.
+	static ApiException unauthorized() {
+		return new ApiException(HttpStatus.UNAUTHORIZED, UNAUTHORIZED_MESSAGE);
 	}
 
 }

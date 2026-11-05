@@ -10,6 +10,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +21,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.todoapi.auth.AuthInterceptor;
+
 /**
  * 아직 실제 API가 예외를 던지지 않으므로, 테스트 전용 컨트롤러로 각 오류 상황을 만들어 응답 모양을 검사한다.
+ * 이 테스트는 "오류 응답 모양"만 본다. 인증 인터셉터가 켜져 있으면 /test/*가 모두 401이 되므로 끈다.
+ * (인증 검사는 AuthInterceptorTest에서 따로 한다.)
  */
-@WebMvcTest(HealthController.class) // 405 테스트에 /health가 필요하다. 다른 컨트롤러(서비스 의존)는 띄우지 않는다.
+// 405 테스트에 /health가 필요하다. 다른 컨트롤러(서비스 의존)는 띄우지 않는다.
+@WebMvcTest(controllers = HealthController.class, excludeFilters = @ComponentScan.Filter(
+		type = FilterType.ASSIGNABLE_TYPE, classes = { WebConfig.class, AuthInterceptor.class }))
 @Import(GlobalExceptionHandlerTest.ThrowingController.class)
 class GlobalExceptionHandlerTest {
 
